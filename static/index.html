@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Daily Report</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <h1 class="app-title">Git Daily Report</h1>
+            <a href="/weekly.html" class="header-link">周报</a>
+            <a href="/monthly.html" class="header-link">月报</a>
+            <div class="mode-toggle">
+                <button id="btnModeCombined" class="mode-toggle-btn active">按仓库</button>
+                <button id="btnModeManager" class="mode-toggle-btn">按人员</button>
+            </div>
+            <select id="headerRepoSelect" class="repo-select" style="display:none;">
+                <option value="">全部仓库</option>
+            </select>
+        </div>
+        <div class="header-actions">
+            <div class="menu-wrapper">
+                <button id="btnMenu" class="btn-icon" aria-label="菜单">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+                <div id="dropdownMenu" class="dropdown-menu">
+                    <button id="btnAddRepo" class="dropdown-item">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        添加仓库
+                    </button>
+                    <button id="btnManageRepos" class="dropdown-item">
+                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        管理仓库
+                    </button>
+                    <button id="btnSettings" class="dropdown-item">
+                        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+                        设置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="calendar-container">
+            <div class="calendar-nav">
+                <button id="btnPrev" class="btn-nav" aria-label="上月">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <h2 id="calendarTitle" class="calendar-title"></h2>
+                <button id="btnNext" class="btn-nav" aria-label="下月">
+                    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </button>
+            </div>
+            <div class="calendar-weekdays">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="weekend">六</span><span class="weekend">日</span>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+    </main>
+
+    <!-- 日报 Modal -->
+    <div id="reportModal" class="modal" style="display:none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" id="reportModalContent">
+            <div class="modal-header">
+                <div>
+                    <h2 id="modalDateTitle"></h2>
+                    <span id="reportStatus" class="status-tag"></span>
+                </div>
+                <button class="modal-close" id="btnCloseReport">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="reportView">
+                    <div class="report-section">
+                        <h3>今日完成</h3>
+                        <div id="viewCompleted" class="report-text"></div>
+                    </div>
+                    <div class="report-section">
+                        <h3>进行中</h3>
+                        <div id="viewInProgress" class="report-text"></div>
+                    </div>
+                    <div class="report-section">
+                        <h3>备注</h3>
+                        <div id="viewNotes" class="report-text"></div>
+                    </div>
+                </div>
+                <div id="reportEditor" style="display:none;">
+                    <div class="edit-group">
+                        <label>今日完成</label>
+                        <textarea id="editCompleted" rows="4" placeholder="今日完成的工作..."></textarea>
+                    </div>
+                    <div class="edit-group">
+                        <label>进行中</label>
+                        <textarea id="editInProgress" rows="3" placeholder="进行中的工作..."></textarea>
+                    </div>
+                    <div class="edit-group">
+                        <label>备注</label>
+                        <textarea id="editNotes" rows="3" placeholder="备注、风险项..."></textarea>
+                    </div>
+                </div>
+                <div id="reportEmpty" style="display:none;">
+                    <p class="empty-hint">暂无日报</p>
+                </div>
+                <div id="loadingSpinner" style="display:none;">
+                    <div class="spinner"></div>
+                    <p class="loading-text">正在生成日报...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="viewActions">
+                    <button id="btnEditReport" class="btn btn-ghost">编辑</button>
+                    <button id="btnGenerateReport" class="btn btn-primary">生成</button>
+                    <button id="btnCopyReport" class="btn btn-ghost">复制</button>
+                    <button id="btnDeleteReport" class="btn btn-danger" style="display:none;">删除</button>
+                </div>
+                <div id="editActions" style="display:none;">
+                    <button id="btnCancelEdit" class="btn btn-ghost">取消</button>
+                    <button id="btnSaveReport" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加仓库 Modal -->
+    <div id="repoModal" class="modal" style="display:none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-small" id="repoModalContent">
+            <div class="modal-header">
+                <h2>添加 Git 仓库</h2>
+                <button class="modal-close" id="btnCloseRepo">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>本地 Git 仓库路径</label>
+                    <input type="text" id="inputRepoPath" placeholder="/Users/you/code/my-project">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnCancelAddRepo" class="btn btn-ghost">取消</button>
+                <button id="btnConfirmAddRepo" class="btn btn-primary">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理仓库 Modal -->
+    <div id="manageReposModal" class="modal" style="display:none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-small" id="manageReposModalContent">
+            <div class="modal-header">
+                <h2>管理仓库</h2>
+                <button class="modal-close" id="btnCloseManageRepos">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="repoList" class="repo-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置 Modal -->
+    <div id="settingsModal" class="modal" style="display:none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" id="settingsModalContent">
+            <div class="modal-header">
+                <h2>设置</h2>
+                <button class="modal-close" id="btnCloseSettings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h3 class="settings-group-title">日报</h3>
+                    <div class="form-row">
+                        <label>自动生成</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="inputAutoGenerate">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>生成时间</label>
+                        <input type="time" id="inputCronTime" value="18:00">
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <h3 class="settings-group-title">AI 模型</h3>
+                    <div class="form-row">
+                        <label>API 地址</label>
+                        <input type="text" id="inputAiApiUrl" placeholder="https://api.openai.com">
+                    </div>
+                    <div class="form-row">
+                        <label>API 密钥</label>
+                        <div class="password-input-row">
+                            <input type="password" id="inputAiApiKey" placeholder="sk-...">
+                            <button id="btnToggleApiKey" class="btn-toggle-eye" type="button" aria-label="显示密钥">
+                                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>模型名称</label>
+                        <input type="text" id="inputAiModelName" placeholder="gpt-4o-mini">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnCancelSettings" class="btn btn-ghost">取消</button>
+                <button id="btnSaveSettings" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理者日报 Modal -->
+    <div id="managerModal" class="modal" style="display:none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" id="managerModalContent">
+            <div class="modal-header">
+                <div>
+                    <h2 id="managerDateTitle"></h2>
+                    <span id="managerStatus" class="status-tag"></span>
+                </div>
+                <button class="modal-close" id="btnCloseManager">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="managerView" class="manager-content"></div>
+                <div id="managerEditor" style="display:none;">
+                    <textarea id="managerEditText" rows="20" style="width:100%;padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:14px;font-family:var(--font);line-height:1.7;resize:vertical;"></textarea>
+                </div>
+                <div id="managerEmpty" style="display:none;">
+                    <p class="empty-hint">暂无日报</p>
+                </div>
+                <div id="managerLoading" style="display:none;">
+                    <div class="spinner"></div>
+                    <p class="loading-text">正在生成团队日报...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="managerViewActions">
+                    <button id="btnEditManager" class="btn btn-ghost">编辑</button>
+                    <button id="btnGenerateManager" class="btn btn-primary">生成</button>
+                    <button id="btnCopyManager" class="btn btn-ghost">复制</button>
+                    <button id="btnDeleteManager" class="btn btn-danger" style="display:none;">删除</button>
+                </div>
+                <div id="managerEditActions" style="display:none;">
+                    <button id="btnCancelManagerEdit" class="btn btn-ghost">取消</button>
+                    <button id="btnSaveManager" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" style="display:none;"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/combined.js"></script>
+</body>
+</html>

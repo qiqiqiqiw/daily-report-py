@@ -1,0 +1,90 @@
+name: Build Desktop App
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller Pillow
+
+      - name: Build exe
+        run: python -m PyInstaller daily-report-windows.spec --noconfirm --clean
+
+      - name: Create data directory
+        run: mkdir dist\GitDailyReport\data
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GitDailyReport-Windows
+          path: dist/GitDailyReport/
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller Pillow
+
+      - name: Build app
+        run: python -m PyInstaller daily-report.spec --noconfirm --clean
+
+      - name: Create data directory
+        run: mkdir -p dist/GitDailyReport.app/Contents/MacOS/data
+
+      - name: Create DMG
+        run: |
+          mkdir -p build/dmg-staging
+          cp -R dist/GitDailyReport.app build/dmg-staging/
+          ln -s /Applications build/dmg-staging/Applications
+          hdiutil create -volname "GitDailyReport" \
+            -srcfolder build/dmg-staging \
+            -ov -format UDZO \
+            dist/GitDailyReport.dmg
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GitDailyReport-macOS
+          path: dist/GitDailyReport.dmg
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Package Windows build
+        run: cd GitDailyReport-Windows && zip -r ../GitDailyReport-Windows.zip .
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            GitDailyReport-Windows.zip
+            GitDailyReport-macOS/GitDailyReport.dmg

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月报 - Git Daily Report</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .month-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .month-title {
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
+        }
+        .month-content {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border-light);
+        }
+        .month-content h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--color-text);
+        }
+        .month-content h2 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 20px 0 10px;
+            color: var(--color-primary);
+        }
+        .month-content h2:first-of-type { margin-top: 0; }
+        .month-content p, .month-content li {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--color-text);
+        }
+        .month-content ul, .month-content ol {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+        .month-empty {
+            text-align: center;
+            color: var(--color-text-muted);
+            padding: 60px 0;
+            font-size: 14px;
+        }
+        .month-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .month-loading {
+            text-align: center;
+            padding: 60px 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <a href="/" class="header-link">
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;vertical-align:middle;margin-right:2px;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                返回
+            </a>
+            <h1 class="app-title">月报</h1>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="month-nav">
+            <button id="btnPrevMonth" class="btn-nav" aria-label="上一月">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <h2 id="monthTitle" class="month-title"></h2>
+            <button id="btnNextMonth" class="btn-nav" aria-label="下一月">
+                <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            </button>
+        </div>
+
+        <div id="monthLoading" class="month-loading" style="display:none;">
+            <div class="spinner"></div>
+            <p class="loading-text">正在生成月报...</p>
+        </div>
+
+        <div id="monthContent" class="month-content" style="display:none;"></div>
+
+        <div id="monthEmpty" class="month-empty" style="display:none;">
+            <p>暂无月报</p>
+        </div>
+
+        <div id="monthActions" class="month-actions" style="display:none;">
+            <button id="btnEditMonth" class="btn btn-ghost">编辑</button>
+            <button id="btnGenerateMonth" class="btn btn-primary">生成</button>
+            <button id="btnCopyMonth" class="btn btn-ghost">复制</button>
+            <button id="btnDeleteMonth" class="btn btn-danger" style="display:none;">删除</button>
+        </div>
+
+        <div id="monthEditArea" style="display:none;">
+            <textarea id="monthEditText" rows="20" style="width:100%;padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:14px;font-family:var(--font);line-height:1.7;resize:vertical;"></textarea>
+            <div class="month-actions">
+                <button id="btnCancelMonthEdit" class="btn btn-ghost">取消</button>
+                <button id="btnSaveMonth" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" style="display:none;"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/monthly.js"></script>
+</body>
+</html>
